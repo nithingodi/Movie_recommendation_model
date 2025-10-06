@@ -1,74 +1,65 @@
-AI Movie Concierge: A Hybrid Content-Based Recommendation System
-Live Demo URL: https://movierecommendationmodel-fbx2pzr5digcl6wkpd6det.streamlit.app/
+# AI Movie Concierge: A Hybrid Content-Based Recommendation System
+
+**Live Demo URL:** <https://movierecommendationmodel-fbx2pzr5digcl6wkpd6det.streamlit.app/>
 
 This project demonstrates an end-to-end, cloud-native movie recommendation engine that leverages advanced machine learning techniques to provide personalized, explainable recommendations. The system is deployed on AWS and features a conversational AI for new user onboarding.
 
-✨ Key Features
-Hybrid Recommendation Model: Combines user behavior with deep content analysis to provide nuanced recommendations.
+---
 
-AI-Driven User Personas: Uses K-Means clustering to automatically segment users into distinct taste profiles (e.g., "The Suspense Seeker," "The Blockbuster Escapist").
+## ✨ Key Features
 
-Deep Content Understanding (CV & NLP):
+* **Hybrid Recommendation Model:** Combines user behavior with deep content analysis to provide nuanced recommendations.
+* **AI-Driven User Personas:** Uses K-Means clustering to automatically segment users into distinct taste profiles (e.g., "The Suspense Seeker," "The Blockbuster Escapist").
+* **Deep Content Understanding (CV & NLP):**
+    * **NLP Analysis:** Utilizes a `SentenceTransformer` model to analyze movie synopses and keywords, creating a "thematic DNA" for each film.
+    * **Computer Vision Analysis:** Employs a Vision Transformer (ViT) model to analyze trailer thumbnails, creating a "visual DNA" based on cinematography and style.
+* **Explainable AI (XAI):** Provides a clear, human-readable reason for each recommendation (e.g., "Recommended because it's similar to 'Inception'").
+* **Conversational Onboarding for New Users:** Integrates **Amazon Bedrock** (using the Titan LLM) to understand natural language prompts from new users and generate "cold start" recommendations.
+* **Cloud-Native & Serverless Deployment:** The entire backend is built on AWS, with the core model deployed as a scalable **SageMaker Real-Time Endpoint** and the frontend hosted on **Streamlit Community Cloud**.
 
-NLP Analysis: Utilizes a SentenceTransformer model to analyze movie synopses and keywords, creating a "thematic DNA" for each film.
+---
 
-Computer Vision Analysis: Employs a Vision Transformer (ViT) model to analyze trailer thumbnails, creating a "visual DNA" based on cinematography and style.
+## ⚙️ Technology Stack & Architecture
 
-Explainable AI (XAI): Provides a clear, human-readable reason for each recommendation (e.g., "Recommended because it's similar to 'Inception'").
+* **Cloud Platform:** Amazon Web Services (AWS)
+* **ML Development:** Amazon SageMaker Studio
+* **Model Deployment:** Amazon SageMaker Real-Time Endpoint (PyTorch Model)
+* **Conversational AI:** Amazon Bedrock (Titan G1 Express)
+* **Data Storage:** Amazon S3
+* **Frontend:** Streamlit
+* **Core Libraries:**
+    * **ML:** Scikit-learn, PyTorch, Transformers, Timm
+    * **Data:** Pandas, NumPy
+    * **APIs:** TMDb, Boto3
 
-Conversational Onboarding for New Users: Integrates Amazon Bedrock (using the Titan LLM) to understand natural language prompts from new users and generate "cold start" recommendations.
+---
 
-Cloud-Native & Serverless Deployment: The entire backend is built on AWS, with the core model deployed as a scalable SageMaker Real-Time Endpoint and the frontend hosted on Streamlit Community Cloud.
+## 🚀 How It Works
 
-⚙️ Technology Stack & Architecture
-Cloud Platform: Amazon Web Services (AWS)
-
-ML Development: Amazon SageMaker Studio
-
-Model Deployment: Amazon SageMaker Real-Time Endpoint (PyTorch Model)
-
-Conversational AI: Amazon Bedrock (Titan G1 Express)
-
-Data Storage: Amazon S3
-
-Frontend: Streamlit
-
-Core Libraries:
-
-ML: Scikit-learn, PyTorch, Transformers, Timm
-
-Data: Pandas, NumPy
-
-APIs: TMDb, Boto3
-
-🚀 How It Works
 The project is divided into two main user journeys:
 
-1. The Returning User Journey (Personalized Recommendations)
+### 1. The Returning User Journey (Personalized Recommendations)
+
 For users with an existing viewing history, the system performs the following steps:
 
-User Profile Generation: The user's "taste profile" is calculated as a weighted average of the "DNA" vectors of movies they have previously rated highly. This calculation incorporates Taste Drift by applying a time-decay function to older ratings.
+1.  **User Profile Generation:** The user's "taste profile" is calculated as a weighted average of the "DNA" vectors of movies they have previously rated highly. This calculation incorporates **Taste Drift** by applying a time-decay function to older ratings.
+2.  **API Call:** The Streamlit frontend sends the `user_id` to the live SageMaker Endpoint.
+3.  **Matching:** The endpoint calculates the **cosine similarity** between the user's taste vector and the pre-computed "DNA" vectors of a pool of new candidate movies.
+4.  **Ranking & Explanation:** The top 5 movies are returned, along with an explanation generated by finding the movie from the user's history that is most similar to each recommendation.
 
-API Call: The Streamlit frontend sends the user_id to the live SageMaker Endpoint.
+### 2. The New User Journey (Conversational "Cold Start")
 
-Matching: The endpoint calculates the cosine similarity between the user's taste vector and the pre-computed "DNA" vectors of a pool of new candidate movies.
-
-Ranking & Explanation: The top 5 movies are returned, along with an explanation generated by finding the movie from the user's history that is most similar to each recommendation.
-
-2. The New User Journey (Conversational "Cold Start")
 For new users, the system uses a conversational approach:
 
-User Prompt: The user describes what they want to watch in natural language (e.g., "a thriller like the movie Dark").
+1.  **User Prompt:** The user describes what they want to watch in natural language (e.g., "a thriller like the movie Dark").
+2.  **LLM Processing:** The prompt is sent to Amazon Bedrock. A carefully engineered meta-prompt instructs the LLM to extract the key information into a structured JSON object.
+3.  **Seed Movie Analysis:** The system uses the "seed" movie from the JSON ("Dark") and runs it through the same CV/NLP pipeline to generate its "DNA" vector.
+4.  **Matching:** This single vector is used as a temporary user profile to find the most similar movies from the candidate pool.
 
-LLM Processing: The prompt is sent to Amazon Bedrock. A carefully engineered meta-prompt instructs the LLM to extract the key information into a structured JSON object.
+---
 
-Seed Movie Analysis: The system uses the "seed" movie from the JSON ("Dark") and runs it through the same CV/NLP pipeline to generate its "DNA" vector.
+## 🔮 Future Work
 
-Matching: This single vector is used as a temporary user profile to find the most similar movies from the candidate pool.
-
-🔮 Future Work
-Full Trailer Analysis: Upgrade the CV pipeline from using trailer thumbnails to analyzing multiple keyframes extracted from the full video trailer for a richer visual understanding.
-
-Session-Based Recommendations: Implement a model (like an RNN) to understand a user's short-term mood and intent within a single viewing session.
-
-SageMaker Feature Store: Migrate the pre-computed "movie DNA" vectors to SageMaker Feature Store for lower latency and better feature management in a production environment.
+* **Full Trailer Analysis:** Upgrade the CV pipeline from using trailer thumbnails to analyzing multiple keyframes extracted from the full video trailer for a richer visual understanding.
+* **Session-Based Recommendations:** Implement a model (like an RNN) to understand a user's short-term mood and intent within a single viewing session.
+* **SageMaker Feature Store:** Migrate the pre-computed "movie DNA" vectors to SageMaker Feature Store for lower latency and better feature management in a production environment.
