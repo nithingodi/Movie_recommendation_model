@@ -1,0 +1,11 @@
+streamlit
+boto3
+pandas
+numpy
+scikit-learn
+tmdbsimple
+sentence-transformers
+torch
+torchvision
+timm
+Pillow
